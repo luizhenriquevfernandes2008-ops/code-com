@@ -48,10 +48,11 @@ link HTTPS fixo. Deixe a janela aberta enquanto os amigos usarem o app.
 **Nos PCs dos amigos:** a pasta versionada **`Codecom - Instalável`** contém
 `Instalar Code com.bat` e as instruções. Esse arquivo apenas abre o link do
 anfitrião; não inicia outro servidor e não precisa de Python. No Edge ou
-Chrome, clique em **Instalar Code com** na tela de login. Se o botão não
-aparecer, use o menu **Aplicativos → Instalar Code com**. No Android, use
-**Instalar app** no menu; no iPhone/iPad, abra no Safari e escolha
-**Compartilhar → Adicionar à Tela de Início**.
+Chrome, clique em **Instalar Code com** na tela de login. No Opera para PC,
+use o ícone de instalação na barra de endereços ou procure **Instalar app**
+no menu; se essa opção não existir na versão instalada, abra o mesmo link no
+Edge ou Chrome. No Android, use **Instalar app** no menu; no iPhone/iPad, abra
+no Safari e escolha **Compartilhar → Adicionar à Tela de Início**.
 
 Na primeira inicialização, o Tailscale pode mostrar um endereço oficial para
 habilitar o Funnel na sua rede. Abra-o, aprove a ativação uma vez e rode

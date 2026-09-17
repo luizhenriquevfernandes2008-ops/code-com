@@ -9,6 +9,9 @@ NO PC DE CADA AMIGO
 1. Confirme que o notebook anfitriao esta ligado com o servidor aberto.
 2. Clique duas vezes em "Instalar Code com.bat". Ele abre o link fixo do app.
 3. No Edge ou Chrome, clique em "Instalar Code com" na tela de login.
+   No Opera para PC, procure o icone Instalar na barra de enderecos ou
+   "Instalar app" no menu. Se nao houver essa opcao, abra o mesmo link no
+   Edge ou Chrome e instale por la.
 4. Depois, use o atalho "Code com" criado no Desktop ou menu Iniciar.
 
 "Instalar Code com.bat" e para o cliente: abre o site e nao inicia servidor.
