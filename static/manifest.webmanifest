@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "Code com",
+  "short_name": "Codecom",
+  "description": "Converse e faça chamadas com seus amigos.",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#0d1721",
+  "theme_color": "#0d1721",
+  "categories": ["social", "communication"],
+  "icons": [
+    { "src": "/icons/codecom-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/codecom-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/codecom-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

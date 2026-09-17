@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Code com</title>
+<meta name="theme-color" content="#0d1721">
+<meta name="description" content="Converse e faça chamadas com seus amigos no Code com.">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icons/codecom.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icons/codecom-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===================================================================
+     TELA DE LOGIN
+     Fica por cima de tudo ate a pessoa entrar.
+==================================================================== -->
+<div id="tela-login" class="tela-login">
+  <div class="caixa-login">
+    <h1>Code com</h1>
+    <p class="sub">Feito do zero, em Python e JavaScript</p>
+
+    <input id="in-user" type="text" placeholder="nome de usuario" autocomplete="username">
+    <input id="in-pass" type="password" placeholder="senha" autocomplete="current-password">
+    <!-- so aparece se o dono do servidor tiver definido uma senha de convite -->
+    <input id="in-convite" type="password" placeholder="senha de convite" class="escondido">
+
+    <div id="erro-login" class="erro"></div>
+
+    <button id="btn-entrar" class="btn-principal">Entrar</button>
+    <button id="btn-criar" class="btn-secundario">Criar conta</button>
+    <button id="btn-instalar-login" class="btn-secundario btn-instalar" type="button">⬇ Instalar Code com</button>
+  </div>
+</div>
+
+
+<!-- ===================================================================
+     O APP
+==================================================================== -->
+<div id="app" class="app escondido">
+
+  <!-- Coluna 1: os servidores (barrinha de icones da esquerda) -->
+  <nav class="rail">
+    <button id="btn-home" class="rail-btn home ativo" title="Conversas privadas">
+      <svg viewBox="0 0 24 24" width="26" height="26"><path fill="currentColor"
+        d="M12 2a5 5 0 015 5v1a5 5 0 01-10 0V7a5 5 0 015-5zm0 12c4.4 0 8 2 8 4.5V21H4v-2.5C4 16 7.6 14 12 14z"/></svg>
+    </button>
+    <div class="rail-sep"></div>
+    <div id="lista-servidores"></div>
+    <button id="btn-novo-servidor" class="rail-btn add" title="Criar ou entrar num servidor">+</button>
+  </nav>
+
+  <!-- Coluna 2: canais (ou lista de DMs) + seu painel embaixo -->
+  <aside class="sidebar">
+    <header class="sidebar-topo">
+      <span id="titulo-sidebar">Conversas</span>
+      <button id="btn-convite" class="mini escondido" title="Copiar convite">🔗</button>
+    </header>
+
+    <div id="lista-canais" class="lista-canais"></div>
+
+    <!-- Painel de voz: so aparece quando voce esta numa chamada -->
+    <div id="painel-voz" class="painel-voz escondido">
+      <div class="voz-linha">
+        <div class="voz-status">
+          <span class="bolinha-verde"></span>
+          <div>
+            <div class="voz-titulo">Voz conectada</div>
+            <div id="voz-canal" class="voz-sub"></div>
+          </div>
+        </div>
+        <button id="btn-sair-voz" class="btn-sair-voz" title="Desconectar">✕</button>
+      </div>
+      <div class="voz-botoes compartilhar-botoes">
+        <button id="btn-tela-janela" class="btn-voz" title="Abrir seletor para uma janela ou aba">🪟 Janela/aba</button>
+        <button id="btn-tela-inteira" class="btn-voz" title="Abrir seletor para a tela inteira">🖥️ Tela toda</button>
+        <button id="btn-parar-tela" class="btn-voz transmitindo escondido" type="button">🛑 Parar transmissão</button>
+        <button id="btn-ruido" class="btn-voz ativo" title="Supressao de ruido">🎚️ Ruído</button>
+      </div>
+      <p class="tela-som-dica">No seletor do navegador, marque <strong>Compartilhar áudio</strong> para enviar o som da janela ou tela.</p>
+      <button id="btn-so-ouvir" class="btn-voz ouvir-modo">🎧 Ouvir sem microfone</button>
+      <label class="qualidade-rotulo" for="qualidade-tela">Qualidade da transmissão</label>
+      <select id="qualidade-tela" class="qualidade-tela">
+        <option value="720-30">720p · 30 fps</option>
+        <option value="720-60">720p · 60 fps</option>
+        <option value="1080-30" selected>1080p · 30 fps</option>
+        <option value="1080-60">1080p · 60 fps</option>
+      </select>
+      <p id="tela-som-status" class="tela-som-status escondido" role="status"></p>
+      <button id="btn-liberar-som" class="btn-voz liberar-som escondido">🔊 Ativar som da chamada e das telas</button>
+      <!-- barrinha que mostra o quanto o microfone esta captando -->
+      <div class="medidor"><div id="medidor-barra" class="medidor-barra"></div></div>
+    </div>
+
+    <!-- Seu usuario -->
+    <div id="painel-usuario" class="painel-usuario">
+      <div id="meu-avatar" class="avatar"></div>
+      <div id="meu-bloco" class="meu-nome-bloco" title="Editar perfil">
+        <div id="meu-nome" class="meu-nome"></div>
+        <div id="meu-status" class="meu-status">online</div>
+      </div>
+      <button id="btn-mudo" class="mini" title="Mutar microfone">🎤</button>
+      <button id="btn-perfil" class="mini" title="Editar perfil">⚙️</button>
+      <button id="btn-sair" class="mini" title="Sair da conta">⏻</button>
+    </div>
+  </aside>
+
+  <!-- Coluna 3: o chat -->
+  <main class="chat">
+    <header class="chat-topo">
+      <!-- so aparece no celular: volta pra lista de canais -->
+      <button id="btn-voltar" class="btn-voltar" title="Voltar">‹</button>
+      <div class="chat-identidade">
+        <span id="chat-titulo" class="chat-titulo"># geral</span>
+        <span id="estado-conexao" class="estado-conexao conectado" role="status"><i></i> Conectado</span>
+      </div>
+      <div class="chat-ferramentas">
+        <input id="busca-mensagens" class="busca-mensagens" type="search" placeholder="Buscar mensagens" aria-label="Buscar mensagens">
+        <button id="btn-fixadas" class="mini" title="Ver mensagens fixadas">📌</button>
+        <button id="btn-config" class="mini" title="Áudio, aparência e atalhos">⚙</button>
+        <button id="btn-membros" class="mini" title="Membros">👥</button>
+      </div>
+    </header>
+
+    <section id="call-stage" class="call-stage escondido" aria-label="Sala de chamada">
+      <div class="call-stage-topo">
+        <div><span class="call-eyebrow">CODE COM · AO VIVO</span><h2 id="call-stage-titulo">Sala de voz</h2></div>
+        <div class="call-stage-actions">
+          <div id="call-diagnostico" class="call-diagnostico" aria-live="polite">
+            <span id="call-rede">Conectando</span><span id="call-latencia">— ms</span><span id="call-perda">—% perda</span><span id="call-video">Sem transmissão</span>
+          </div>
+          <button id="btn-mudo-call" class="call-mute-button" type="button" title="Mutar microfone">🎤</button>
+        </div>
+      </div>
+      <div id="call-participantes" class="call-participantes" aria-live="polite"></div>
+      <div id="call-controls" class="call-controls"></div>
+      <div id="call-screens" class="call-screens"></div>
+    </section>
+
+    <div id="mensagens" class="mensagens"></div>
+
+    <div id="digitando" class="digitando"></div>
+
+    <form id="form-msg" class="composer">
+      <button type="button" id="btn-anexo" class="btn-anexo" title="Enviar arquivo">+</button>
+      <input type="file" id="input-arquivo" class="escondido">
+      <input id="input-msg" class="input-msg" placeholder="Mensagem" autocomplete="off">
+      <button type="submit" class="btn-enviar">Enviar</button>
+    </form>
+
+    <!-- Previa do arquivo escolhido, antes de enviar -->
+    <div id="previa-arquivo" class="previa escondido">
+      <div class="previa-detalhes"><span id="previa-nome"></span><progress id="progresso-upload" max="100" value="0" class="progresso-upload escondido"></progress></div>
+      <button id="previa-cancelar" class="mini">✕</button>
+    </div>
+    <div id="resposta-previa" class="resposta-previa escondido">
+      <div><strong>Respondendo a</strong><span id="resposta-autor"></span><small id="resposta-texto"></small></div>
+      <button id="resposta-cancelar" class="mini" type="button" title="Cancelar resposta">✕</button>
+    </div>
+  </main>
+
+  <!-- Coluna 4: membros -->
+  <aside id="painel-membros" class="membros">
+    <h3>Membros</h3>
+    <div id="lista-membros"></div>
+  </aside>
+</div>
+
+
+<!-- ===================================================================
+     VISOR DE TRANSMISSAO
+
+     Fica FORA do painel do chat de proposito. Dentro dele, no celular,
+     o visor herdava o "display:none" do chat enquanto voce estava na
+     lista de canais - o video chegava mas com altura zero.
+     Aqui ele flutua por cima e aparece em qualquer tela.
+==================================================================== -->
+<div id="visor" class="visor escondido">
+  <div class="visor-topo">
+    <span class="visor-ponto"></span>
+    <span id="visor-titulo" class="visor-titulo">Transmissao</span>
+    <button id="visor-recolher" class="visor-btn" title="Recolher">–</button>
+  </div>
+  <div id="area-telas" class="area-telas"></div>
+</div>
+
+<!-- Onde o audio das outras pessoas toca (invisivel) -->
+<div id="audios"></div>
+
+<dialog id="modal-volume" class="volume-dialog" aria-labelledby="volume-titulo">
+  <h2 id="volume-titulo">Volume da pessoa</h2>
+  <p class="volume-ajuda">Ajusta apenas o que você ouve. 0% silencia; 100% é o volume original.</p>
+  <label class="volume-rotulo" for="volume-voz">Voz <output id="volume-voz-valor" for="volume-voz">100%</output></label>
+  <input id="volume-voz" type="range" min="0" max="200" step="5" value="100">
+  <label class="volume-rotulo" for="volume-tela">Som da transmissão <output id="volume-tela-valor" for="volume-tela">100%</output></label>
+  <input id="volume-tela" type="range" min="0" max="200" step="5" value="100">
+  <div class="volume-acoes">
+    <button id="volume-restaurar" class="btn-secundario">Restaurar 100%</button>
+    <button id="volume-fechar" class="btn-principal">Pronto</button>
+  </div>
+</dialog>
+
+<dialog id="dialog-config" class="volume-dialog settings-dialog" aria-labelledby="config-titulo">
+  <button id="config-fechar" class="fechar-modal" type="button" aria-label="Fechar configurações">✕</button>
+  <span class="config-eyebrow">SEU ESPAÇO</span>
+  <h2 id="config-titulo">Configurações rápidas</h2>
+  <label class="volume-rotulo" for="tema-app">Aparência</label>
+  <select id="tema-app" class="config-select"><option value="aurora">Aurora Codecom</option><option value="violeta">Violeta noturno</option><option value="claro">Luz suave</option></select>
+  <label class="volume-rotulo" for="dispositivo-microfone">Microfone</label>
+  <select id="dispositivo-microfone" class="config-select"><option value="">Microfone padrão</option></select>
+  <div class="config-medidor"><span>Teste de microfone</span><div class="medidor"><div id="medidor-config-barra" class="medidor-barra"></div></div><small>Fale para conferir o nível.</small></div>
+  <label class="volume-rotulo" for="dispositivo-saida">Saída de áudio</label>
+  <select id="dispositivo-saida" class="config-select"><option value="">Saída padrão</option></select>
+  <button id="btn-testar-saida" class="btn-secundario" type="button">♪ Testar saída</button>
+  <label class="config-opcao"><input id="atalho-ptt" type="checkbox"><span><strong>Pressione para falar</strong><small>Segure V para abrir o microfone.</small></span><kbd>V</kbd></label>
+  <label class="config-opcao"><input id="sons-call" type="checkbox" checked><span><strong>Sons da call</strong><small>Entrada, saída e mute.</small></span></label>
+  <section class="install-card">
+    <div><strong>Use como aplicativo</strong><small>Abra o Code com numa janela própria e adicione um atalho ao Desktop.</small></div>
+    <button id="btn-instalar-config" class="btn-secundario" type="button">Instalar Code com</button>
+  </section>
+</dialog>
+
+<dialog id="dialog-editar-mensagem" class="volume-dialog editor-mensagem" aria-labelledby="editar-mensagem-titulo">
+  <span class="config-eyebrow">MENSAGEM</span>
+  <h2 id="editar-mensagem-titulo">Editar mensagem</h2>
+  <textarea id="texto-editar-mensagem" maxlength="4000" rows="5" aria-label="Texto da mensagem"></textarea>
+  <div class="volume-acoes"><button id="cancelar-edicao-mensagem" class="btn-secundario" type="button">Cancelar</button><button id="salvar-edicao-mensagem" class="btn-principal" type="button">Salvar alterações</button></div>
+</dialog>
+
+<dialog id="visualizador-foto" class="visualizador-foto" aria-label="Foto ampliada">
+  <button id="fechar-foto" class="fechar-foto" type="button" aria-label="Fechar foto">✕</button>
+  <img id="foto-ampliada" alt="">
+</dialog>
+
+<!-- Caixinha de dialogo generica -->
+<div id="modal" class="modal escondido">
+  <div class="modal-caixa">
+    <h2 id="modal-titulo"></h2>
+    <input id="modal-input" type="text">
+    <div id="modal-erro" class="erro"></div>
+    <div class="modal-botoes">
+      <button id="modal-cancelar" class="btn-secundario">Cancelar</button>
+      <button id="modal-ok" class="btn-principal">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================================
+     PERFIL DE OUTRA PESSOA
+==================================================================== -->
+<div id="modal-perfil" class="modal escondido">
+  <div class="cartao-perfil">
+    <div id="perfil-capa" class="perfil-capa"></div>
+    <div id="perfil-avatar" class="perfil-avatar"></div>
+
+    <div class="perfil-corpo">
+      <div id="perfil-nome" class="perfil-nome"></div>
+      <div id="perfil-user" class="perfil-user"></div>
+      <div id="perfil-status" class="perfil-status"></div>
+
+      <div id="perfil-bio-bloco" class="perfil-secao escondido">
+        <h4>Sobre</h4>
+        <div id="perfil-bio" class="perfil-bio"></div>
+      </div>
+
+      <div class="perfil-secao">
+        <h4>Membro desde</h4>
+        <div id="perfil-desde" class="perfil-info"></div>
+      </div>
+
+      <div id="perfil-comuns-bloco" class="perfil-secao escondido">
+        <h4>Servidores em comum</h4>
+        <div id="perfil-comuns" class="perfil-comuns"></div>
+      </div>
+
+      <div id="perfil-botoes" class="perfil-botoes"></div>
+    </div>
+
+    <button id="perfil-fechar" class="fechar-modal">✕</button>
+  </div>
+</div>
+
+
+<!-- ===================================================================
+     EDITAR MEU PERFIL
+==================================================================== -->
+<div id="modal-editar" class="modal escondido">
+  <div class="modal-caixa modal-largo">
+    <h2>Editar perfil</h2>
+
+    <div class="editar-topo">
+      <div id="editar-avatar" class="perfil-avatar-grande"></div>
+      <div>
+        <button id="btn-trocar-foto" class="btn-secundario btn-inline">Trocar foto</button>
+        <button id="btn-tirar-foto" class="btn-secundario btn-inline">Remover foto</button>
+        <input type="file" id="input-avatar" accept="image/*" class="escondido">
+      </div>
+    </div>
+
+    <label class="rotulo">Nome de exibicao</label>
+    <input id="ed-nome" type="text" maxlength="32" placeholder="como seu nome aparece">
+
+    <label class="rotulo">Status</label>
+    <input id="ed-status" type="text" maxlength="60" placeholder="jogando Minecraft...">
+
+    <label class="rotulo">Sobre mim</label>
+    <textarea id="ed-bio" maxlength="190" rows="3" placeholder="fale de voce"></textarea>
+
+    <label class="rotulo">Cor do avatar</label>
+    <div id="ed-cores" class="paleta"></div>
+
+    <details class="bloco-senha">
+      <summary>Trocar senha</summary>
+      <input id="ed-senha-atual" type="password" placeholder="senha atual">
+      <input id="ed-senha-nova" type="password" placeholder="senha nova">
+      <button id="btn-trocar-senha" class="btn-secundario">Confirmar troca de senha</button>
+    </details>
+
+    <div id="editar-erro" class="erro"></div>
+    <div class="modal-botoes">
+      <button id="editar-cancelar" class="btn-secundario">Cancelar</button>
+      <button id="editar-salvar" class="btn-principal">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div id="aviso" class="aviso escondido"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

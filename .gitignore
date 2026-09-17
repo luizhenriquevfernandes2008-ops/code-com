@@ -1,0 +1,24 @@
+# dados locais da instalação (contas, mensagens e arquivos temporários do SQLite)
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+
+# arquivos enviados pelas pessoas
+uploads/*
+!uploads/.gitkeep
+
+# certificado HTTPS - NUNCA versionar a chave privada
+*.pem
+
+# configuração e credenciais locais
+.env
+.env.*
+senha_de_convite.txt
+
+# arquivos gerados por ferramentas
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+*.log
