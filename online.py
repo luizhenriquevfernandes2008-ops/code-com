@@ -235,6 +235,28 @@ def obter_endereco_tailscale(caminho):
     return None
 
 
+def funnel_aponta_para_porta(caminho, porta):
+    """Detecta um Funnel persistente ja apontado para o servidor do app."""
+    try:
+        resultado = subprocess.run(
+            [caminho, "funnel", "status", "--json"], capture_output=True,
+            text=True, encoding="utf-8", errors="replace", timeout=20,
+        )
+        dados = json.loads(resultado.stdout)
+        destino = f"http://127.0.0.1:{porta}"
+        permitidos = dados.get("AllowFunnel", {})
+        for host, configuracao in dados.get("Web", {}).items():
+            if permitidos.get(host) is not True:
+                continue
+            handlers = configuracao.get("Handlers", {})
+            raiz = handlers.get("/", {})
+            if raiz.get("Proxy", "").rstrip("/") == destino:
+                return True
+    except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError):
+        pass
+    return False
+
+
 def porta_ocupada(porta: int) -> bool:
     with socket.socket() as s:
         s.settimeout(0.5)
@@ -397,6 +419,7 @@ def main():
     )
     argumentos = parser.parse_args()
     modo_rapido = argumentos.quick
+    funil_existente = False
     os.chdir(BASE_DIR)
 
     print()
@@ -425,6 +448,7 @@ def main():
             print("  ERRO: abra o Tailscale e conecte este notebook a sua conta.")
             input("  Aperte Enter pra fechar...")
             return 1
+        funil_existente = funnel_aponta_para_porta(executavel_tunel, PORTA)
 
     if porta_ocupada(PORTA) and not resolver_porta_ocupada(PORTA):
         print()
@@ -462,24 +486,21 @@ def main():
         return 1
 
     # ---- 2) o tunel ---------------------------------------------------
+    estado = {"url": None, "aprovacao": None}
+    tunel = None
+
     if modo_rapido:
         print("  [2/2] Abrindo o link temporario do Cloudflare...")
         comando_tunel = [
             executavel_tunel, "tunnel", "--url", f"http://127.0.0.1:{PORTA}"
         ]
+    elif funil_existente:
+        print("  [2/2] Reutilizando o link fixo ja habilitado no Tailscale...")
+        estado["url"] = endereco_fixo
     else:
         print("  [2/2] Abrindo seu link HTTPS fixo do Tailscale...")
         comando_tunel = [executavel_tunel, "funnel", str(PORTA)]
-    print("        (a primeira ativacao do Funnel pode pedir aprovacao unica)")
-
-    tunel = subprocess.Popen(
-        comando_tunel, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-        text=True, encoding="utf-8", errors="replace", bufsize=1,
-    )
-    FILHOS.append(tunel)
-    adotar(JOB, tunel)
-
-    estado = {"url": None, "aprovacao": None}
+        print("        (a primeira ativacao do Funnel pode pedir aprovacao unica)")
 
     def mostrar(url):
         legenda = "SEU ENDERECO TEMPORARIO:" if modo_rapido else "SEU ENDERECO FIXO (manda pros amigos):"
@@ -522,12 +543,22 @@ def main():
             elif "ERR" in linha or "not enabled on your tailnet" in linha.lower():
                 print("  [tunel] " + linha.rstrip()[:180])
 
-    leitor_tunel = threading.Thread(target=ler_saida, daemon=True)
-    leitor_tunel.start()
+    leitor_tunel = None
+    if not funil_existente or modo_rapido:
+        tunel = subprocess.Popen(
+            comando_tunel, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            text=True, encoding="utf-8", errors="replace", bufsize=1,
+        )
+        FILHOS.append(tunel)
+        adotar(JOB, tunel)
+        leitor_tunel = threading.Thread(target=ler_saida, daemon=True)
+        leitor_tunel.start()
+    else:
+        mostrar(estado["url"])
 
     try:
         while True:
-            if tunel.poll() is not None:
+            if tunel is not None and tunel.poll() is not None:
                 leitor_tunel.join(timeout=2)
                 if estado["aprovacao"]:
                     print("\n  Ative o Funnel no link acima e abra iniciar_online.bat de novo.")
@@ -542,6 +573,8 @@ def main():
         print("\n  Desligando...")
     finally:
         for p in (tunel, servidor):
+            if p is None:
+                continue
             try:
                 p.terminate()
                 p.wait(timeout=5)
