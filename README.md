@@ -39,20 +39,30 @@ Na primeira vez, crie uma conta com "Criar conta".
 ### Instalar como aplicativo no Desktop ou celular
 
 O Code com pode ser instalado pelo Edge ou Chrome e abre numa janela própria.
-No primeiro uso, rode **`Abrir Code com.bat`** dentro da pasta **`Codecom - Instalável`**
-no Desktop. Com o servidor aberto, clique em **Instalar Code com** na tela de
-login ou nas configurações; se o navegador não mostrar o prompt, use o menu
-**Aplicativos → Instalar Code com**. Depois, escolha criar o atalho no Desktop
-ou fixe o app no menu Iniciar. No Android, use **Instalar app** no menu do
-navegador; no iPhone/iPad, abra no Safari e use **Compartilhar → Adicionar à
-Tela de Início**.
+A instalação fica associada ao endereço que você abriu no navegador.
 
-O atalho instalado abre `localhost`, então o servidor deste computador precisa
-estar ligado. A tela offline orienta a iniciar o Code com pela pasta do Desktop;
-mensagens, contas e chamadas não são armazenadas offline. Para instalar uma
-versão acessível aos amigos, é preciso usar um endereço HTTPS estável. O túnel
-gratuito do Cloudflare muda o endereço ao reiniciar, e o navegador trata cada
-endereço como uma instalação diferente.
+**No notebook que hospeda o servidor:** use a pasta **`Codecom - Instalável`**
+no Desktop e rode **`Abrir Code com.bat`** para usar o endereço local. Para os
+amigos acessarem pela internet, rode **`iniciar_online.bat`** e envie a eles o
+link `https://...trycloudflare.com` que aparecer. Essa pasta é só o iniciador
+do servidor do anfitrião; os amigos não precisam baixar o código do GitHub nem
+ter essa pasta.
+
+**Para cada amigo instalar o atalho:** abra o link HTTPS recebido no Edge ou
+Chrome e clique em **Instalar Code com** na tela de login ou nas configurações.
+Se o botão não aparecer, use o menu **Aplicativos → Instalar Code com**. No
+Android, também é possível usar **Instalar app** no menu do navegador; no
+iPhone/iPad, abra no Safari e use **Compartilhar → Adicionar à Tela de Início**.
+O atalho abre o app hospedado no notebook, então o computador e as janelas do
+servidor e do túnel precisam continuar ligados.
+
+O túnel gratuito do Cloudflare cria outro endereço ao reiniciar. Como o atalho
+fica preso ao endereço usado na instalação, se o link mudar será preciso abrir
+o novo link e instalar novamente. Para manter o mesmo atalho funcionando depois
+de reinicializações, configure um túnel nomeado com um domínio próprio.
+
+Mensagens, contas e chamadas não são armazenadas offline; a tela offline apenas
+orienta como iniciar o servidor.
 
 ### Chamar a galera pela internet (jeito recomendado)
 
