@@ -1,0 +1,24 @@
+CODE COM - PASTA INSTALAVEL
+
+NO NOTEBOOK ANFITRIAO
+1. Mantenha o projeto completo e o Tailscale conectados neste notebook.
+2. Clique duas vezes em "Abrir Code com.bat". Ele inicia o servidor online.
+3. Deixe a janela do servidor aberta enquanto os amigos usarem o app.
+
+NO PC DE CADA AMIGO
+1. Confirme que o notebook anfitriao esta ligado com o servidor aberto.
+2. Clique duas vezes em "Instalar Code com.bat". Ele abre o link fixo do app.
+3. No Edge ou Chrome, clique em "Instalar Code com" na tela de login.
+4. Depois, use o atalho "Code com" criado no Desktop ou menu Iniciar.
+
+"Instalar Code com.bat" e para o cliente: abre o site e nao inicia servidor.
+O amigo nao precisa de Python, Tailscale nem dos arquivos do projeto.
+
+Se o botao nao aparecer, abra o menu do Edge ou Chrome e escolha
+Aplicativos > Instalar Code com.
+
+Para um app ja instalado por um link temporario antigo, remova o atalho antigo
+e instale mais uma vez pelo link fixo abaixo.
+
+Link do Code com:
+https://desktop-tjk4u1q.tail02510a.ts.net

@@ -41,27 +41,25 @@ Na primeira vez, crie uma conta com "Criar conta".
 O Code com pode ser instalado pelo Edge ou Chrome e abre numa janela própria.
 A instalação fica associada ao endereço que você abriu no navegador.
 
-**No notebook que hospeda o servidor:** use a pasta **`Codecom - Instalável`**
-no Desktop e rode **`Abrir Code com.bat`** para usar o endereço local. Para os
-amigos acessarem pela internet, rode **`iniciar_online.bat`** no projeto. Ele
-usa o Tailscale Funnel e mostra o mesmo link HTTPS fixo em cada inicialização.
-Essa pasta é só o iniciador do servidor do anfitrião; os amigos não precisam
-baixar o código do GitHub nem instalar Tailscale.
+**No notebook anfitrião:** rode **`Codecom - Instalável/Abrir Code com.bat`**
+ou execute **`iniciar_online.bat`** no projeto. Isso liga o servidor e abre o
+link HTTPS fixo. Deixe a janela aberta enquanto os amigos usarem o app.
 
-**Para cada amigo instalar o atalho:** abra o link HTTPS recebido no Edge ou
-Chrome e clique em **Instalar Code com** na tela de login ou nas configurações.
-Se o botão não aparecer, use o menu **Aplicativos → Instalar Code com**. No
-Android, também é possível usar **Instalar app** no menu do navegador; no
-iPhone/iPad, abra no Safari e use **Compartilhar → Adicionar à Tela de Início**.
-O atalho abre o app hospedado no notebook, então o computador e as janelas do
-servidor e do túnel precisam continuar ligados.
+**Nos PCs dos amigos:** a pasta versionada **`Codecom - Instalável`** contém
+`Instalar Code com.bat` e as instruções. Esse arquivo apenas abre o link do
+anfitrião; não inicia outro servidor e não precisa de Python. No Edge ou
+Chrome, clique em **Instalar Code com** na tela de login. Se o botão não
+aparecer, use o menu **Aplicativos → Instalar Code com**. No Android, use
+**Instalar app** no menu; no iPhone/iPad, abra no Safari e escolha
+**Compartilhar → Adicionar à Tela de Início**.
 
 Na primeira inicialização, o Tailscale pode mostrar um endereço oficial para
 habilitar o Funnel na sua rede. Abra-o, aprove a ativação uma vez e rode
 `iniciar_online.bat` novamente. O Funnel tem plano gratuito; o notebook precisa
 continuar ligado, conectado ao Tailscale e com a janela do servidor aberta.
 O link é público para quem o tiver, então compartilhe apenas com seus amigos;
-a senha de convite continua necessária para criar contas.
+a senha de convite continua necessária para criar contas. Amigos não precisam
+instalar Tailscale nem manter uma cópia do servidor.
 
 Se quiser um link temporário do Cloudflare, rode **`iniciar_online_rapido.bat`**.
 Esse endereço muda quando o túnel reinicia e exige reinstalar o atalho caso a
