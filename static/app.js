@@ -40,7 +40,7 @@ const estado = {
   soOuvir: false,
   ativandoMicrofone: false,
   mudos: {},
-  audioTelaBloqueadoPorEco: false,
+  audioTelaSemFiltroEco: false,
   portaoLigado: true,      // supressao de ruido ligada por padrao
   minhaTela: null,         // MediaStream da tela, quando estou compartilhando
   qualidadeTela: "1080-30",
@@ -1487,9 +1487,11 @@ async function trocarMicrofone(deviceId) {
 }
 
 function aplicarTema(tema) {
-  const valido = ["aurora", "violeta", "claro"].includes(tema) ? tema : "aurora";
+  const valido = ["aurora", "violeta", "claro", "hello-kitty"].includes(tema) ? tema : "aurora";
   estado.tema = valido;
   document.body.dataset.tema = valido;
+  const cores = { aurora: "#0d1721", violeta: "#151020", claro: "#f8fbfa", "hello-kitty": "#fff0f6" };
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", cores[valido]);
   try { localStorage.setItem("codecom-tema", valido); } catch {}
 }
 
@@ -2127,6 +2129,7 @@ async function alternarTela(superficie = null) {
   $("#qualidade-tela").disabled = true;
 
   try {
+    const suportesAudioProprio = navigator.mediaDevices.getSupportedConstraints?.().restrictOwnAudio === true;
     const stream = await navigator.mediaDevices.getDisplayMedia({
       // displaySurface orienta o seletor nativo; a pessoa ainda escolhe a fonte final.
       video: { ...restricoesTela(), ...(superficie ? { displaySurface: superficie } : {}) },
@@ -2138,8 +2141,8 @@ async function alternarTela(superficie = null) {
         noiseSuppression: false,
         autoGainControl: false,
         suppressLocalAudioPlayback: false,
-        // Remove do áudio capturado o som gerado pelo próprio Codecom.
-        restrictOwnAudio: true,
+        // Remove a voz recebida do Codecom da captura quando o navegador oferece esse filtro.
+        ...(suportesAudioProprio ? { restrictOwnAudio: true } : {}),
       },
       systemAudio: "include",
       windowAudio: "window",
@@ -2153,11 +2156,10 @@ async function alternarTela(superficie = null) {
     estado.minhaTela = stream;
     const audioCompartilhado = stream.getAudioTracks().find((t) => t.readyState === "live");
     const isolamentoAtivo = audioCompartilhado?.getSettings?.().restrictOwnAudio === true;
-    // Sem isolamento confirmado, a captura pode conter as vozes da call e
-    // devolvê-las a quem está assistindo. Silenciamos somente essa faixa de
-    // saída; a pessoa que transmite continua ouvindo a call normalmente.
-    estado.audioTelaBloqueadoPorEco = Boolean(audioCompartilhado && !isolamentoAtivo);
-    if (estado.audioTelaBloqueadoPorEco) audioCompartilhado.enabled = false;
+    // Não desabilite a faixa compartilhada: isso fazia a tela inteira ficar
+    // muda em navegadores que não expõem getSettings().restrictOwnAudio.
+    // O status avisa quando o navegador não consegue filtrar o retorno da call.
+    estado.audioTelaSemFiltroEco = Boolean(audioCompartilhado && !isolamentoAtivo);
   } catch (erro) {
     aviso(erro.name === "NotAllowedError" ? "Compartilhamento cancelado ou sem permissao" :
       "Nao foi possivel capturar a tela neste navegador", "#f0b232");
@@ -2191,12 +2193,14 @@ async function alternarTela(superficie = null) {
   // Marcar "compartilhar audio" e opcional e fica facil de esquecer.
   // Avisamos na hora, em vez de deixar a pessoa descobrir pelos amigos.
   atualizarStatusSomTela();
-  if (estado.minhaTela.getAudioTracks().length && !estado.audioTelaBloqueadoPorEco) {
-    aviso("Compartilhando tela com som");
-  } else if (estado.audioTelaBloqueadoPorEco) {
-    aviso("Som da tela bloqueado para evitar eco; você continua ouvindo a call", "#f0b232");
+  if (estado.minhaTela.getAudioTracks().length) {
+    if (estado.audioTelaSemFiltroEco) {
+      aviso("Som da tela ativo; este navegador não filtra o retorno da call", "#f0b232", 5200);
+    } else {
+      aviso("Compartilhando tela com som");
+    }
   } else {
-    aviso("Tela sem som: marque 'compartilhar audio' na janela do navegador", "#f0b232");
+    aviso("Tela sem som: marque 'Compartilhar áudio' ou 'Áudio do sistema' no seletor", "#f0b232", 5200);
   }
 }
 
@@ -2206,14 +2210,14 @@ function atualizarStatusSomTela() {
   status.classList.toggle("escondido", !tela);
   if (!tela) { status.textContent = ""; return; }
   const comSom = tela.getAudioTracks().some((t) => t.readyState === "live" && t.enabled);
-  status.classList.toggle("sem-som", !comSom || estado.audioTelaBloqueadoPorEco);
+  status.classList.toggle("sem-som", !comSom);
   const perfil = PERFIS_TELA[estado.qualidadeTela];
   const superficie = tela.getVideoTracks()[0]?.getSettings?.().displaySurface;
   const nomeSuperficie = ({ browser: "Aba", window: "Janela", monitor: "Tela inteira" })[superficie] || "Tela";
-  if (estado.audioTelaBloqueadoPorEco) {
-    status.textContent = nomeSuperficie + " sem áudio transmitido: este navegador não confirmou o filtro contra eco. Você continua ouvindo a call; use um navegador compatível para compartilhar som.";
-  } else if (!comSom) {
-    status.textContent = "Tela sem som. Marque Compartilhar áudio no seletor; janelas e telas inteiras dependem do navegador.";
+  if (!comSom) {
+    status.textContent = "Tela sem som. Marque Compartilhar áudio ou Áudio do sistema no seletor; a opção depende do navegador.";
+  } else if (estado.audioTelaSemFiltroEco) {
+    status.textContent = nomeSuperficie + " com som · o navegador não filtra o retorno do Codecom; outras pessoas podem ouvir o áudio da call junto.";
   } else {
     status.textContent = nomeSuperficie + " com som · perfil " + perfil.altura + "p/" + perfil.fps + " fps · retorno do Codecom filtrado";
   }
@@ -2234,7 +2238,7 @@ function pararDeCompartilhar() {
 
   estado.minhaTela.getTracks().forEach((t) => t.stop());
   estado.minhaTela = null;
-  estado.audioTelaBloqueadoPorEco = false;
+  estado.audioTelaSemFiltroEco = false;
   estado.bitrateTelaPeer = {};
   atualizarStatusSomTela();
   tirarTela(estado.eu.id);

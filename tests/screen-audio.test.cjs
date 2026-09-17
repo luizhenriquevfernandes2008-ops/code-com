@@ -29,6 +29,7 @@ function setup() {
   }
   const all = [];
   let blockPlayback = false;
+  let restrictOwnAudioSupported = true;
   class Element {
     constructor(tag) {
       this.tag = tag; this.children = []; this.dataset = {}; this.isConnected = false;
@@ -81,14 +82,18 @@ function setup() {
     document, localStorage: { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value) }, console,
     URL,
     setTimeout: () => 1, clearTimeout() {}, MediaStream: Stream, RTCPeerConnection: Peer,
-    navigator: { mediaDevices: { getDisplayMedia: async opts => { options = opts; return capture; } } },
+    navigator: { mediaDevices: {
+      getSupportedConstraints: () => ({ restrictOwnAudio: restrictOwnAudioSupported }),
+      getDisplayMedia: async opts => { options = opts; return capture; },
+    } },
   });
   const cutoff = source.lastIndexOf('/* ==========================================================================', source.indexOf('   LIGANDO OS BOTOES'));
   vm.runInContext(source.slice(0, cutoff) + '\nglobalThis.state = estado;', context);
   context.state.eu = { id: 1, display_name: 'Eu' };
   context.state.vozCanal = 7;
   context.state.meuAudio = new Stream([new Track('audio')]);
-  return { context, roots, capture, Track, Stream, storage, options: () => options, block: value => { blockPlayback = value; } };
+  return { context, roots, capture, Track, Stream, storage, options: () => options,
+    block: value => { blockPlayback = value; }, supportOwnAudioFilter: value => { restrictOwnAudioSupported = value; } };
 }
 
 test('envia imagem e som a participantes atuais e a quem entra depois; parar preserva microfone', async () => {
@@ -116,8 +121,9 @@ test('envia imagem e som a participantes atuais e a quem entra depois; parar pre
   assert.ok(app.roots['tela-som-status'].classList.contains('escondido'));
 });
 
-test('bloqueia só o áudio transmitido sem isolamento e mantém a call audível localmente', async () => {
+test('mantém o áudio da tela ativo quando o navegador não oferece filtro contra eco', async () => {
   const app = setup();
+  app.supportOwnAudioFilter(false);
   app.capture.getAudioTracks()[0].getSettings = () => ({ restrictOwnAudio: false });
   const peer = app.context.criarLigacao(2);
   const mic = new app.Stream([new app.Track('audio')]);
@@ -127,17 +133,18 @@ test('bloqueia só o áudio transmitido sem isolamento e mantém a call audível
   assert.equal(voz.muted, false);
 
   await app.context.alternarTela('monitor');
-  assert.equal(app.context.state.audioTelaBloqueadoPorEco, true);
-  assert.equal(app.capture.getAudioTracks()[0].enabled, false);
+  assert.equal(app.options().audio.restrictOwnAudio, undefined);
+  assert.equal(app.context.state.audioTelaSemFiltroEco, true);
+  assert.equal(app.capture.getAudioTracks()[0].enabled, true);
   const faixasDeAudioEnviadas = peer.getSenders().filter(sender => sender.track?.kind === 'audio');
   assert.equal(faixasDeAudioEnviadas.length, 2);
   assert.ok(faixasDeAudioEnviadas.some(sender => sender.track === app.context.state.meuAudio.getAudioTracks()[0]));
   assert.equal(app.context.state.meuAudio.getAudioTracks()[0].enabled, true);
   assert.equal(voz.muted, false);
-  assert.match(app.roots['tela-som-status'].textContent, /Você continua ouvindo a call/);
+  assert.match(app.roots['tela-som-status'].textContent, /com som.*não filtra o retorno do Codecom/);
 
   app.context.pararDeCompartilhar();
-  assert.equal(app.context.state.audioTelaBloqueadoPorEco, false);
+  assert.equal(app.context.state.audioTelaSemFiltroEco, false);
   assert.equal(voz.muted, false);
 });
 

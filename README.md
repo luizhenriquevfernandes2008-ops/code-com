@@ -17,6 +17,7 @@ de dados obrigatório.
   enviar imagens e arquivos.
 - Entrar em chamadas de voz, controlar o volume de cada participante e usar
   atalhos e preferências de áudio.
+- Escolher temas visuais Aurora, Violeta, Luz suave e Rosa Hello Kitty.
 - Compartilhar uma janela, aba ou a tela inteira; quando o navegador e a fonte
   permitem, incluir o áudio da tela. A transmissão oferece alvos de 720p ou
   1080p a 30 ou 60 FPS.

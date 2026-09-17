@@ -889,6 +889,86 @@ body[data-tema="claro"] .chat-topo, body[data-tema="claro"] .painel-usuario { ba
 body[data-tema="claro"] .busca-mensagens, body[data-tema="claro"] .config-select { background: #fff; color: #20352e; }
 body[data-tema="claro"] .msg-acoes, body[data-tema="claro"] .seletor-reacao { background: #f8fffb; }
 body[data-tema="claro"] .call-stage { background: radial-gradient(ellipse at 15% 0%, #a5ecd540, transparent 52%), #e9f4ef; }
+body[data-tema="hello-kitty"] {
+  --bg-rail: #f9c5da; --bg-sidebar: #fff0f6; --bg-chat: #fff9fc; --bg-input: #ffe8f1;
+  --bg-hover: #ffdeeb; --bg-ativo: #f8c9de; --texto: #71475b; --texto-forte: #482a3a;
+  --texto-fraco: #a4778d; --azul: #e94f91; --azul-hover: #d83278; --verde: #4c987b;
+  --vermelho: #dc5377; --server-accent: #e94f91; --surface-glass: #fff7faed;
+  --linha-suave: #edbfd1; --raio: 14px;
+}
+body[data-tema="hello-kitty"] .tela-login {
+  background: radial-gradient(ellipse at 16% 18%, #fff9fc 0 7%, transparent 7.5%),
+    radial-gradient(ellipse at 84% 78%, #fff9fcaa 0 11%, transparent 11.5%),
+    radial-gradient(ellipse at 83% 17%, #f6a8c766, transparent 28%),
+    linear-gradient(135deg, #ffeaf2, #f5bad2 54%, #fff1dc);
+}
+body[data-tema="hello-kitty"] .caixa-login {
+  background: #fffafdf2; border: 1px solid #ffffffd9;
+  border-radius: 26px; box-shadow: 0 24px 70px #a9436a38, 0 0 0 6px #fff5f8aa;
+}
+body[data-tema="hello-kitty"] .caixa-login h1::before {
+  content: "🐱 🎀"; display: block; margin-bottom: 4px; font-size: 34px; line-height: 1;
+  filter: drop-shadow(0 4px 5px #df5d9133);
+}
+body[data-tema="hello-kitty"] .caixa-login h1::after {
+  content: "hello kitty theme"; display: block; margin-top: 5px; color: var(--azul);
+  font-size: 9px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase;
+}
+body[data-tema="hello-kitty"] .rail { background: linear-gradient(180deg, #f8c0d7, #f7d7e5); border-color: #edb4cb; }
+body[data-tema="hello-kitty"] .rail-btn { background: #fff2f7; color: #9d466b; box-shadow: 0 5px 14px #a9436a17; }
+body[data-tema="hello-kitty"] .rail-btn.ativo { background: #e94f91; color: #fff; box-shadow: 0 6px 18px #d8327840; }
+body[data-tema="hello-kitty"] .rail-btn:hover { background: #e94f91; color: #fff; }
+body[data-tema="hello-kitty"] .rail-btn.add { color: #a94b70; }
+body[data-tema="hello-kitty"] .sidebar { background: var(--bg-sidebar); border-color: #f1ccda; }
+body[data-tema="hello-kitty"] .sidebar-topo,
+body[data-tema="hello-kitty"] .chat-topo,
+body[data-tema="hello-kitty"] .painel-usuario { background: #fff4f8; border-color: #f2d1de; }
+body[data-tema="hello-kitty"] .chat { background: radial-gradient(ellipse at 50% -45%, #f7c8dc77, transparent 65%), var(--bg-chat); }
+body[data-tema="hello-kitty"] .mensagens::-webkit-scrollbar-thumb { background: #e9bfd0; }
+body[data-tema="hello-kitty"] .painel-voz { background: #ffeaf2; border-color: #f1c8d8; }
+body[data-tema="hello-kitty"] .btn-voz { border: 1px solid #f0cada; background: #fff4f8; color: #86556a; }
+body[data-tema="hello-kitty"] .btn-voz:hover { background: #f9d8e6; color: #542b40; }
+body[data-tema="hello-kitty"] .btn-voz.ativo { background: #4c987b; border-color: #4c987b; color: #fff; }
+body[data-tema="hello-kitty"] .btn-voz.transmitindo { background: #dc5377; border-color: #dc5377; color: #fff; }
+body[data-tema="hello-kitty"] .call-stage {
+  background: radial-gradient(ellipse at 12% 0%, #ffcee2, transparent 55%),
+    radial-gradient(ellipse at 92% 100%, #ffe9f0, transparent 45%), #fff5f9;
+  border-color: #f0cada;
+}
+body[data-tema="hello-kitty"] .call-eyebrow,
+body[data-tema="hello-kitty"] .voz-titulo { color: #d63e7d; }
+body[data-tema="hello-kitty"] .call-eyebrow::before { content: "🎀 "; }
+body[data-tema="hello-kitty"] .call-person:hover { color: #bd3970; }
+body[data-tema="hello-kitty"] .call-mute-button,
+body[data-tema="hello-kitty"] .call-diagnostico span { background: #fff2f7; border-color: #f0cada; color: #70445a; }
+body[data-tema="hello-kitty"] .call-mute-button.mutado { background: #ffe0e9; border-color: #eaa7bc; color: #a33358; }
+body[data-tema="hello-kitty"] .call-controls .painel-voz { background: #fff9fcdd; border-color: #edc4d4; }
+body[data-tema="hello-kitty"] .composer { background: #fff0f6; border-color: #edc4d4; }
+body[data-tema="hello-kitty"] .btn-enviar,
+body[data-tema="hello-kitty"] .btn-principal { background: #e94f91; color: #fff; }
+body[data-tema="hello-kitty"] .btn-enviar:hover,
+body[data-tema="hello-kitty"] .btn-principal:hover { background: #d83278; }
+body[data-tema="hello-kitty"] input[type="text"],
+body[data-tema="hello-kitty"] input[type="password"],
+body[data-tema="hello-kitty"] textarea,
+body[data-tema="hello-kitty"] .busca-mensagens,
+body[data-tema="hello-kitty"] .config-select,
+body[data-tema="hello-kitty"] .qualidade-tela { background: #fffafd; border-color: #edc4d4; color: var(--texto); }
+body[data-tema="hello-kitty"] .msg:hover { border-color: #f2d2df; background: #ffeaf366; }
+body[data-tema="hello-kitty"] .msg-acoes,
+body[data-tema="hello-kitty"] .seletor-reacao { background: #fffafd; border-color: #edc4d4; }
+body[data-tema="hello-kitty"] .msg-acao:hover,
+body[data-tema="hello-kitty"] .seletor-reacao button:hover { background: #ffe1ec; color: #8b3e61; }
+body[data-tema="hello-kitty"] .reacao { background: #fff2f7; border-color: #edc4d4; color: var(--texto); }
+body[data-tema="hello-kitty"] .msg-citada,
+body[data-tema="hello-kitty"] .resposta-previa,
+body[data-tema="hello-kitty"] .config-opcao { background: #fff0f6; border-color: #edc4d4; }
+body[data-tema="hello-kitty"] .volume-dialog,
+body[data-tema="hello-kitty"] .modal-caixa,
+body[data-tema="hello-kitty"] .cartao-perfil { background: #fffafd; border-color: #edc4d4; box-shadow: 0 20px 60px #a9436a28; }
+body[data-tema="hello-kitty"] .aviso { background: #d63e7d; color: #fff; }
+body[data-tema="hello-kitty"] .mini:hover { background: #ffe1ec; color: #803b5b; }
+body[data-tema="hello-kitty"] .ponto-status { border-color: var(--bg-sidebar); }
 @media (max-width: 720px) {
   .chat-topo { min-height: 54px; padding-inline: 8px; gap: 5px; }
   .chat-identidade { gap: 5px; }
