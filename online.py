@@ -522,11 +522,13 @@ def main():
             elif "ERR" in linha or "not enabled on your tailnet" in linha.lower():
                 print("  [tunel] " + linha.rstrip()[:180])
 
-    threading.Thread(target=ler_saida, daemon=True).start()
+    leitor_tunel = threading.Thread(target=ler_saida, daemon=True)
+    leitor_tunel.start()
 
     try:
         while True:
             if tunel.poll() is not None:
+                leitor_tunel.join(timeout=2)
                 if estado["aprovacao"]:
                     print("\n  Ative o Funnel no link acima e abra iniciar_online.bat de novo.")
                 else:
