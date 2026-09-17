@@ -8,7 +8,8 @@ NO NOTEBOOK ANFITRIAO
 NO PC DE CADA AMIGO
 1. Confirme que o notebook anfitriao esta ligado com o servidor aberto.
 2. Clique duas vezes em "Instalar Code com.bat". Ele cria o atalho "Code com"
-   na Area de Trabalho e abre o link no Opera instalado (Opera ou Opera GX).
+   com o icone do app na Area de Trabalho e abre o link no Opera instalado
+   (Opera ou Opera GX).
 3. Depois, use o atalho "Code com" para abrir o app no Opera.
 
 "Instalar Code com.bat" e para o cliente: cria o atalho e abre o site, mas nao

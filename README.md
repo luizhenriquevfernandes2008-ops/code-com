@@ -46,9 +46,10 @@ ou execute **`iniciar_online.bat`** no projeto. Isso liga o servidor e abre o
 link HTTPS fixo. Deixe a janela aberta enquanto os amigos usarem o app.
 
 **Nos PCs dos amigos:** a pasta versionada **`Codecom - Instalável`** contém
-`Instalar Code com.bat` e as instruções. No Windows, esse arquivo cria na Área
-de Trabalho um atalho que abre o link do anfitrião no Opera ou Opera GX, e não
-inicia outro servidor nem precisa de Python. Assim, os amigos podem continuar
+`Instalar Code com.bat`, o ícone e as instruções. No Windows, esse arquivo cria
+na Área de Trabalho um atalho com o ícone do Code com, que abre o link do
+anfitrião no Opera ou Opera GX. O arquivo não inicia outro servidor e não
+precisa de Python. Assim, os amigos podem continuar
 usando o Opera mesmo quando a instalação PWA não aparece no navegador. No Edge
 ou Chrome, também é possível instalar como PWA pelo botão **Instalar Code com**
 na tela de login. No Android, use **Instalar app** no menu; no iPhone/iPad, abra

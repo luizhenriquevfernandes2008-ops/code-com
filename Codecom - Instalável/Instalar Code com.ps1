@@ -36,13 +36,21 @@ if (-not $opera) {
 
 $desktop = [Environment]::GetFolderPath("DesktopDirectory")
 $shortcutPath = Join-Path $desktop "Code com.lnk"
+$iconSource = Join-Path $PSScriptRoot "Code com.ico"
+$iconDirectory = Join-Path $env:LOCALAPPDATA "Code com"
+$iconPath = Join-Path $iconDirectory "Code com.ico"
+if (Test-Path -LiteralPath $iconSource) {
+    New-Item -ItemType Directory -Path $iconDirectory -Force | Out-Null
+    Copy-Item -LiteralPath $iconSource -Destination $iconPath -Force
+}
+
 $shell = New-Object -ComObject WScript.Shell
 $shortcut = $shell.CreateShortcut($shortcutPath)
 $shortcut.TargetPath = $opera
 $shortcut.Arguments = "`"$url`""
 $shortcut.WorkingDirectory = Split-Path -Parent $opera
 $shortcut.Description = "Abrir Code com no Opera"
-$shortcut.IconLocation = "$opera,0"
+$shortcut.IconLocation = if (Test-Path -LiteralPath $iconPath) { "$iconPath,0" } else { "$opera,0" }
 $shortcut.Save()
 
 Start-Process -FilePath $opera -ArgumentList "`"$url`""
