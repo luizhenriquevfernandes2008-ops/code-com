@@ -7,21 +7,19 @@ NO NOTEBOOK ANFITRIAO
 
 NO PC DE CADA AMIGO
 1. Confirme que o notebook anfitriao esta ligado com o servidor aberto.
-2. Clique duas vezes em "Instalar Code com.bat". Ele abre o link fixo do app.
-3. No Edge ou Chrome, clique em "Instalar Code com" na tela de login.
-   No Opera para PC, procure o icone Instalar na barra de enderecos ou
-   "Instalar app" no menu. Se nao houver essa opcao, abra o mesmo link no
-   Edge ou Chrome e instale por la.
-4. Depois, use o atalho "Code com" criado no Desktop ou menu Iniciar.
+2. Clique duas vezes em "Instalar Code com.bat". Ele cria o atalho "Code com"
+   na Area de Trabalho e abre o link no Opera instalado (Opera ou Opera GX).
+3. Depois, use o atalho "Code com" para abrir o app no Opera.
 
-"Instalar Code com.bat" e para o cliente: abre o site e nao inicia servidor.
-O amigo nao precisa de Python, Tailscale nem dos arquivos do projeto.
+"Instalar Code com.bat" e para o cliente: cria o atalho e abre o site, mas nao
+inicia servidor. O amigo nao precisa de Python, Tailscale nem dos arquivos do
+projeto. O app continua funcionando em uma aba normal do Opera.
 
-Se o botao nao aparecer, abra o menu do Edge ou Chrome e escolha
-Aplicativos > Instalar Code com.
+O Opera pode nao mostrar uma opcao de instalacao PWA nesta versao. O atalho
+criado pelo instalador permite abrir o Code com diretamente pelo Opera.
 
-Para um app ja instalado por um link temporario antigo, remova o atalho antigo
-e instale mais uma vez pelo link fixo abaixo.
+Se houver um atalho antigo de um link temporario, remova-o e execute o
+instalador novamente para recriar o atalho com o link fixo.
 
 Link do Code com:
 https://desktop-tjk4u1q.tail02510a.ts.net

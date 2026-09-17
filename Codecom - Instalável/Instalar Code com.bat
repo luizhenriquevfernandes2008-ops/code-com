@@ -1,11 +1,10 @@
 @echo off
 chcp 65001 >nul
-title Code com - Instalador
+title Code com - Atalho do Opera
 
-echo Abrindo o Code com para instalar no navegador...
+echo Criando um atalho do Code com que abre no Opera...
 echo.
-start "" "https://desktop-tjk4u1q.tail02510a.ts.net"
-echo Na tela de login, clique em "Instalar Code com".
-echo Este arquivo abre o app hospedado no notebook; nao inicia um servidor local.
+set "SCRIPT=%~dp0Instalar Code com.ps1"
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT%"
 echo.
 pause

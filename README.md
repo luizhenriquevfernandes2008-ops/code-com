@@ -46,12 +46,12 @@ ou execute **`iniciar_online.bat`** no projeto. Isso liga o servidor e abre o
 link HTTPS fixo. Deixe a janela aberta enquanto os amigos usarem o app.
 
 **Nos PCs dos amigos:** a pasta versionada **`Codecom - Instalável`** contém
-`Instalar Code com.bat` e as instruções. Esse arquivo apenas abre o link do
-anfitrião; não inicia outro servidor e não precisa de Python. No Edge ou
-Chrome, clique em **Instalar Code com** na tela de login. No Opera para PC,
-use o ícone de instalação na barra de endereços ou procure **Instalar app**
-no menu; se essa opção não existir na versão instalada, abra o mesmo link no
-Edge ou Chrome. No Android, use **Instalar app** no menu; no iPhone/iPad, abra
+`Instalar Code com.bat` e as instruções. No Windows, esse arquivo cria na Área
+de Trabalho um atalho que abre o link do anfitrião no Opera ou Opera GX, e não
+inicia outro servidor nem precisa de Python. Assim, os amigos podem continuar
+usando o Opera mesmo quando a instalação PWA não aparece no navegador. No Edge
+ou Chrome, também é possível instalar como PWA pelo botão **Instalar Code com**
+na tela de login. No Android, use **Instalar app** no menu; no iPhone/iPad, abra
 no Safari e escolha **Compartilhar → Adicionar à Tela de Início**.
 
 Na primeira inicialização, o Tailscale pode mostrar um endereço oficial para

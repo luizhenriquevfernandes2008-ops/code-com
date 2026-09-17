@@ -141,7 +141,7 @@ async function instalarCodecom() {
   } else if (/android/i.test(navigator.userAgent)) {
     instrucao = "No menu do navegador, escolha Instalar app ou Adicionar à tela inicial.";
   } else if (/(opera|opr\/)/i.test(navigator.userAgent)) {
-    instrucao = "No Opera, use o ícone Instalar na barra de endereços ou procure Instalar app no menu. Se essa opção não aparecer, abra o link no Chrome ou Edge e escolha Instalar Code com.";
+    instrucao = "Você pode usar o Code com no Opera. Para criar um atalho na Área de Trabalho que abra por ele, execute Instalar Code com.bat na pasta Codecom - Instalável.";
   }
   aviso(instrucao, "#f0b232", 7000);
 }
