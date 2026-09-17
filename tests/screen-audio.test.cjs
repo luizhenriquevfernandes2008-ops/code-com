@@ -53,7 +53,7 @@ function setup() {
   }
   const roots = {};
   for (const id of ['audios', 'btn-liberar-som', 'btn-tela-janela', 'btn-tela-inteira', 'btn-parar-tela',
-    'qualidade-tela', 'tela-som-status', 'area-telas', 'visor', 'visor-titulo', 'aviso']) {
+    'qualidade-tela', 'tela-som-status', 'tela-som-dica', 'area-telas', 'visor', 'visor-titulo', 'aviso']) {
     roots[id] = new Element('div'); roots[id].id = id; roots[id].isConnected = true;
   }
   const document = {
@@ -121,31 +121,43 @@ test('envia imagem e som a participantes atuais e a quem entra depois; parar pre
   assert.ok(app.roots['tela-som-status'].classList.contains('escondido'));
 });
 
-test('mantém o áudio da tela ativo quando o navegador não oferece filtro contra eco', async () => {
+test('sem filtro contra retorno, desativa tela inteira e aceita somente uma aba do navegador', async () => {
   const app = setup();
   app.supportOwnAudioFilter(false);
   app.capture.getAudioTracks()[0].getSettings = () => ({ restrictOwnAudio: false });
-  const peer = app.context.criarLigacao(2);
-  const mic = new app.Stream([new app.Track('audio')]);
-  peer.ontrack({ track: mic.getAudioTracks()[0], streams: [mic] });
-  await new Promise(setImmediate);
-  const voz = app.roots.audios.children[0];
-  assert.equal(voz.muted, false);
-
+  app.capture.getVideoTracks()[0].settings = { width: 1920, height: 1080, displaySurface: 'monitor' };
+  app.context.atualizarDisponibilidadeCompartilhamento();
+  assert.ok(app.roots['btn-tela-inteira'].classList.contains('escondido'));
+  assert.match(app.roots['tela-som-dica'].textContent, /Compartilhe uma aba do navegador/);
   await app.context.alternarTela('monitor');
+  assert.equal(app.options(), undefined, 'não abre captura de tela inteira sem o filtro');
+  assert.equal(app.context.state.minhaTela, null);
+
+  app.capture.getVideoTracks()[0].settings.displaySurface = 'browser';
+  const peer = app.context.criarLigacao(2);
+  await app.context.alternarTela('browser');
+  assert.equal(app.options().video.displaySurface, 'browser');
+  assert.equal(app.options().systemAudio, 'exclude');
   assert.equal(app.options().audio.restrictOwnAudio, undefined);
-  assert.equal(app.context.state.audioTelaSemFiltroEco, true);
   assert.equal(app.capture.getAudioTracks()[0].enabled, true);
   const faixasDeAudioEnviadas = peer.getSenders().filter(sender => sender.track?.kind === 'audio');
   assert.equal(faixasDeAudioEnviadas.length, 2);
   assert.ok(faixasDeAudioEnviadas.some(sender => sender.track === app.context.state.meuAudio.getAudioTracks()[0]));
   assert.equal(app.context.state.meuAudio.getAudioTracks()[0].enabled, true);
-  assert.equal(voz.muted, false);
-  assert.match(app.roots['tela-som-status'].textContent, /com som.*não filtra o retorno do Codecom/);
+  assert.match(app.roots['tela-som-status'].textContent, /Aba do navegador com som/);
 
   app.context.pararDeCompartilhar();
-  assert.equal(app.context.state.audioTelaSemFiltroEco, false);
-  assert.equal(voz.muted, false);
+  assert.ok(app.roots['btn-tela-inteira'].classList.contains('escondido'));
+});
+
+test('não compartilha áudio de janela/tela se o filtro foi anunciado mas não aplicado', async () => {
+  const app = setup();
+  app.capture.getVideoTracks()[0].settings = { width: 1920, height: 1080, displaySurface: 'monitor' };
+  app.capture.getAudioTracks()[0].getSettings = () => ({ restrictOwnAudio: false });
+  await app.context.alternarTela('monitor');
+  assert.equal(app.context.state.minhaTela, null);
+  assert.ok(app.capture.getTracks().every(track => track.readyState === 'ended'));
+  assert.match(app.roots.aviso.textContent, /áudio da call/);
 });
 
 test('reproduz microfone e som da tela em players separados e libera autoplay bloqueado', async () => {

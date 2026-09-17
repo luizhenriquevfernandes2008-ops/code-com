@@ -18,9 +18,10 @@ de dados obrigatório.
 - Entrar em chamadas de voz, controlar o volume de cada participante e usar
   atalhos e preferências de áudio.
 - Escolher temas visuais Aurora, Violeta, Luz suave e Rosa Hello Kitty.
-- Compartilhar uma janela, aba ou a tela inteira; quando o navegador e a fonte
-  permitem, incluir o áudio da tela. A transmissão oferece alvos de 720p ou
-  1080p a 30 ou 60 FPS.
+- Compartilhar uma aba ou a tela inteira; áudio do sistema só é oferecido quando
+  o navegador confirma que consegue filtrar o retorno da call. Nos demais,
+  permanece disponível o compartilhamento de abas. A transmissão oferece alvos
+  de 720p ou 1080p a 30 ou 60 FPS.
 - Instalar a interface como PWA e continuar vendo a tela de orientação offline;
   o servidor precisa estar ligado para usar contas, mensagens, voz e chamadas.
 - Usar o app localmente, na mesma rede ou pela internet com HTTPS e um túnel.

@@ -40,7 +40,6 @@ const estado = {
   soOuvir: false,
   ativandoMicrofone: false,
   mudos: {},
-  audioTelaSemFiltroEco: false,
   portaoLigado: true,      // supressao de ruido ligada por padrao
   minhaTela: null,         // MediaStream da tela, quando estou compartilhando
   qualidadeTela: "1080-30",
@@ -2097,6 +2096,24 @@ function restaurarQualidadeTela() {
   $("#qualidade-tela").value = estado.qualidadeTela;
 }
 
+function filtroAudioProprioDisponivel() {
+  try { return navigator.mediaDevices.getSupportedConstraints?.().restrictOwnAudio === true; }
+  catch { return false; }
+}
+
+function atualizarDisponibilidadeCompartilhamento() {
+  const filtraAudio = filtroAudioProprioDisponivel();
+  const telaToda = $("#btn-tela-inteira");
+  if (telaToda) telaToda.classList.toggle("escondido", !filtraAudio);
+  const dica = $(".tela-som-dica");
+  if (dica) {
+    dica.textContent = filtraAudio
+      ? "No seletor, marque Compartilhar áudio ou Áudio do sistema. A tela inteira só é aceita com o filtro contra retorno ativo."
+      : "Este navegador não consegue separar o áudio da call do som do sistema. Compartilhe uma aba do navegador; tela e áudio do sistema ficam desativados.";
+  }
+  return filtraAudio;
+}
+
 async function mudarQualidadeTela() {
   const seletor = $("#qualidade-tela");
   const chave = seletor.value;
@@ -2122,6 +2139,11 @@ async function mudarQualidadeTela() {
 async function alternarTela(superficie = null) {
   if (!estado.vozCanal) { aviso("Entre numa sala de voz primeiro", "#f0b232"); return; }
   if (estado.minhaTela) { pararDeCompartilhar(); return; }
+  const filtraAudioProprio = filtroAudioProprioDisponivel();
+  if (superficie === "monitor" && !filtraAudioProprio) {
+    aviso("Este navegador não separa o áudio da call do som do sistema. Use uma aba do navegador.", "#f0b232", 6000);
+    return;
+  }
   const botoes = [$("#btn-tela-janela"), $("#btn-tela-inteira")];
   if (botoes.some((botao) => botao.disabled)) return;
   const canal = estado.vozCanal;
@@ -2129,10 +2151,9 @@ async function alternarTela(superficie = null) {
   $("#qualidade-tela").disabled = true;
 
   try {
-    const suportesAudioProprio = navigator.mediaDevices.getSupportedConstraints?.().restrictOwnAudio === true;
     const stream = await navigator.mediaDevices.getDisplayMedia({
       // displaySurface orienta o seletor nativo; a pessoa ainda escolhe a fonte final.
-      video: { ...restricoesTela(), ...(superficie ? { displaySurface: superficie } : {}) },
+      video: { ...restricoesTela(), ...(superficie ? { displaySurface: filtraAudioProprio ? superficie : "browser" } : {}) },
       // audio: true faz o navegador oferecer a caixinha "compartilhar audio".
       // Desligamos os tratamentos de voz aqui de proposito: eles sao feitos
       // pra microfone e estragariam musica e som de jogo.
@@ -2142,9 +2163,9 @@ async function alternarTela(superficie = null) {
         autoGainControl: false,
         suppressLocalAudioPlayback: false,
         // Remove a voz recebida do Codecom da captura quando o navegador oferece esse filtro.
-        ...(suportesAudioProprio ? { restrictOwnAudio: true } : {}),
+        ...(filtraAudioProprio ? { restrictOwnAudio: true } : {}),
       },
-      systemAudio: "include",
+      systemAudio: filtraAudioProprio ? "include" : "exclude",
       windowAudio: "window",
       selfBrowserSurface: "exclude",
     });
@@ -2153,13 +2174,17 @@ async function alternarTela(superficie = null) {
       stream.getTracks().forEach((t) => t.stop());
       return;
     }
-    estado.minhaTela = stream;
+    const superficieCapturada = stream.getVideoTracks()[0]?.getSettings?.().displaySurface;
     const audioCompartilhado = stream.getAudioTracks().find((t) => t.readyState === "live");
     const isolamentoAtivo = audioCompartilhado?.getSettings?.().restrictOwnAudio === true;
-    // Não desabilite a faixa compartilhada: isso fazia a tela inteira ficar
-    // muda em navegadores que não expõem getSettings().restrictOwnAudio.
-    // O status avisa quando o navegador não consegue filtrar o retorno da call.
-    estado.audioTelaSemFiltroEco = Boolean(audioCompartilhado && !isolamentoAtivo);
+    const somenteAbaSegura = !filtraAudioProprio && superficieCapturada === "browser";
+    const audioDeSistemaSemFiltro = Boolean(audioCompartilhado && superficieCapturada !== "browser" && !isolamentoAtivo);
+    if ((!filtraAudioProprio && !somenteAbaSegura) || audioDeSistemaSemFiltro) {
+      stream.getTracks().forEach((t) => t.stop());
+      aviso("Essa fonte pode incluir o áudio da call. Selecione uma aba do navegador ou atualize o navegador para compartilhar a tela inteira com segurança.", "#f0b232", 7000);
+      return;
+    }
+    estado.minhaTela = stream;
   } catch (erro) {
     aviso(erro.name === "NotAllowedError" ? "Compartilhamento cancelado ou sem permissao" :
       "Nao foi possivel capturar a tela neste navegador", "#f0b232");
@@ -2194,11 +2219,8 @@ async function alternarTela(superficie = null) {
   // Avisamos na hora, em vez de deixar a pessoa descobrir pelos amigos.
   atualizarStatusSomTela();
   if (estado.minhaTela.getAudioTracks().length) {
-    if (estado.audioTelaSemFiltroEco) {
-      aviso("Som da tela ativo; este navegador não filtra o retorno da call", "#f0b232", 5200);
-    } else {
-      aviso("Compartilhando tela com som");
-    }
+    const surface = estado.minhaTela.getVideoTracks()[0]?.getSettings?.().displaySurface;
+    aviso(surface === "browser" ? "Compartilhando a aba do navegador com som" : "Compartilhando a tela com o áudio da call filtrado");
   } else {
     aviso("Tela sem som: marque 'Compartilhar áudio' ou 'Áudio do sistema' no seletor", "#f0b232", 5200);
   }
@@ -2216,8 +2238,8 @@ function atualizarStatusSomTela() {
   const nomeSuperficie = ({ browser: "Aba", window: "Janela", monitor: "Tela inteira" })[superficie] || "Tela";
   if (!comSom) {
     status.textContent = "Tela sem som. Marque Compartilhar áudio ou Áudio do sistema no seletor; a opção depende do navegador.";
-  } else if (estado.audioTelaSemFiltroEco) {
-    status.textContent = nomeSuperficie + " com som · o navegador não filtra o retorno do Codecom; outras pessoas podem ouvir o áudio da call junto.";
+  } else if (superficie === "browser") {
+    status.textContent = "Aba do navegador com som · áudio limitado à aba selecionada · perfil " + perfil.altura + "p/" + perfil.fps + " fps";
   } else {
     status.textContent = nomeSuperficie + " com som · perfil " + perfil.altura + "p/" + perfil.fps + " fps · retorno do Codecom filtrado";
   }
@@ -2238,13 +2260,12 @@ function pararDeCompartilhar() {
 
   estado.minhaTela.getTracks().forEach((t) => t.stop());
   estado.minhaTela = null;
-  estado.audioTelaSemFiltroEco = false;
   estado.bitrateTelaPeer = {};
   atualizarStatusSomTela();
   tirarTela(estado.eu.id);
 
   $("#btn-tela-janela").classList.remove("escondido");
-  $("#btn-tela-inteira").classList.remove("escondido");
+  atualizarDisponibilidadeCompartilhamento();
   $("#btn-parar-tela").classList.add("escondido");
 }
 
@@ -2687,8 +2708,9 @@ $("#btn-fixadas").onclick = () => {
 };
 
 // voz: tela e supressao de ruido
-$("#btn-tela-janela").onclick = () => alternarTela("window");
+$("#btn-tela-janela").onclick = () => alternarTela("browser");
 $("#btn-tela-inteira").onclick = () => alternarTela("monitor");
+atualizarDisponibilidadeCompartilhamento();
 $("#btn-parar-tela").onclick = pararDeCompartilhar;
 restaurarQualidadeTela();
 $("#qualidade-tela").onchange = mudarQualidadeTela;
