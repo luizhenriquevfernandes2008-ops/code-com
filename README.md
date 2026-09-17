@@ -43,10 +43,10 @@ A instalação fica associada ao endereço que você abriu no navegador.
 
 **No notebook que hospeda o servidor:** use a pasta **`Codecom - Instalável`**
 no Desktop e rode **`Abrir Code com.bat`** para usar o endereço local. Para os
-amigos acessarem pela internet, rode **`iniciar_online.bat`** e envie a eles o
-link `https://...trycloudflare.com` que aparecer. Essa pasta é só o iniciador
-do servidor do anfitrião; os amigos não precisam baixar o código do GitHub nem
-ter essa pasta.
+amigos acessarem pela internet, rode **`iniciar_online.bat`** no projeto. Ele
+usa o Tailscale Funnel e mostra o mesmo link HTTPS fixo em cada inicialização.
+Essa pasta é só o iniciador do servidor do anfitrião; os amigos não precisam
+baixar o código do GitHub nem instalar Tailscale.
 
 **Para cada amigo instalar o atalho:** abra o link HTTPS recebido no Edge ou
 Chrome e clique em **Instalar Code com** na tela de login ou nas configurações.
@@ -56,21 +56,27 @@ iPhone/iPad, abra no Safari e use **Compartilhar → Adicionar à Tela de Iníci
 O atalho abre o app hospedado no notebook, então o computador e as janelas do
 servidor e do túnel precisam continuar ligados.
 
-O túnel gratuito do Cloudflare cria outro endereço ao reiniciar. Como o atalho
-fica preso ao endereço usado na instalação, se o link mudar será preciso abrir
-o novo link e instalar novamente. Para manter o mesmo atalho funcionando depois
-de reinicializações, configure um túnel nomeado com um domínio próprio.
+Na primeira inicialização, o Tailscale pode mostrar um endereço oficial para
+habilitar o Funnel na sua rede. Abra-o, aprove a ativação uma vez e rode
+`iniciar_online.bat` novamente. O Funnel tem plano gratuito; o notebook precisa
+continuar ligado, conectado ao Tailscale e com a janela do servidor aberta.
+O link é público para quem o tiver, então compartilhe apenas com seus amigos;
+a senha de convite continua necessária para criar contas.
+
+Se quiser um link temporário do Cloudflare, rode **`iniciar_online_rapido.bat`**.
+Esse endereço muda quando o túnel reinicia e exige reinstalar o atalho caso a
+origem antiga deixe de existir.
 
 Mensagens, contas e chamadas não são armazenadas offline; a tela offline apenas
 orienta como iniciar o servidor.
 
 ### Chamar a galera pela internet (jeito recomendado)
 
-Rode **`iniciar_online.bat`**. Ele liga o servidor e abre um túnel da Cloudflare,
-te dando um endereço público tipo:
+Rode **`iniciar_online.bat`**. Ele liga o servidor e abre um endereço HTTPS
+público fixo do Tailscale, parecido com:
 
 ```
-https://motion-flow-promo-muscles.trycloudflare.com
+https://nome-do-notebook.nome-da-rede.ts.net
 ```
 
 Manda esse link pros amigos — funciona de qualquer lugar do mundo, e **a voz
@@ -79,12 +85,20 @@ funciona**, porque é `https://`.
 Ele mostra o endereço numa caixa, **copia pra área de transferência** (é só colar
 no WhatsApp) e abre o app pra você em `http://localhost:8000`.
 
+O Tailscale Funnel é gratuito e os amigos abrem o link sem instalar Tailscale.
+Na primeira vez, aprove a ativação única na página oficial que o iniciador
+mostrar. A propagação do DNS inicial pode levar alguns minutos.
+
 Coisas pra saber:
 
-- **o endereço muda toda vez** que você liga. É normal no túnel gratuito.
+- **o endereço permanece o mesmo** nas próximas inicializações do notebook.
 - **a janela preta tem que ficar aberta** — ela é o servidor. Ctrl+C desliga tudo.
+- o Tailscale precisa estar instalado e conectado no notebook anfitrião.
 - seus amigos precisam da **senha de convite** pra criar conta — está no arquivo
   `senha_de_convite.txt`. Trocar a senha ali não exige reiniciar nada.
+
+Para usar o link temporário do Cloudflare, abra `iniciar_online_rapido.bat`;
+esse link muda quando reiniciar o túnel.
 
 ### "O link não abre aqui na minha máquina"
 
@@ -98,7 +112,7 @@ Pra resolver de vez, troque o DNS do Windows para `1.1.1.1`:
 *Configurações → Rede e Internet → sua conexão → Editar DNS → Manual → IPv4 ligado
 → DNS preferencial `1.1.1.1`*.
 
-Precisa instalar o cloudflared uma vez só:
+Somente para usar o link temporário do Cloudflare, instale o cloudflared uma vez:
 
 ```
 winget install Cloudflare.cloudflared

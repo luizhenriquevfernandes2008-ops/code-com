@@ -2,15 +2,19 @@
 Liga o Code com no modo ONLINE.
 
 Faz tres coisas que o .bat sozinho nao fazia bem:
-  1. pesca o endereco publico no meio do log do cloudflared
+  1. pesca o endereco publico no log do Tailscale Funnel ou Cloudflare
   2. mostra ele limpo, copia pra area de transferencia e abre o navegador
   3. derruba servidor E tunel juntos - no Ctrl+C e tambem quando a
      janela e fechada no X, pra nao sobrar ninguem segurando a porta
 
-Rode pelo iniciar_online.bat (ou "python online.py").
+Rode pelo iniciar_online.bat (ou "python online.py"). O modo padrao usa
+Tailscale Funnel para manter o mesmo endereco HTTPS entre inicializacoes;
+use --quick para gerar um link temporario do Cloudflare.
 """
 
+import argparse
 import ctypes
+import json
 import os
 import re
 import shutil
@@ -25,13 +29,23 @@ from ctypes import wintypes
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PORTA = 8000
 
-# O endereco do tunel sempre termina assim
-PADRAO_URL = re.compile(r"https://[a-z0-9-]+\.trycloudflare\.com")
+# Enderecos publico do Cloudflare Quick Tunnel e do Tailscale Funnel.
+PADRAO_URL = re.compile(
+    r"https://[a-z0-9-]+\.(?:trycloudflare\.com|[a-z0-9-]+\.ts\.net)",
+    re.IGNORECASE,
+)
+PADRAO_ATIVACAO = re.compile(r"https://login\.tailscale\.com/f/funnel\?node=[A-Za-z0-9_-]+")
 
 # Onde o cloudflared costuma ficar no Windows
 LUGARES_CLOUDFLARED = [
     r"C:\Program Files (x86)\cloudflared\cloudflared.exe",
     r"C:\Program Files\cloudflared\cloudflared.exe",
+]
+
+# O instalador oficial nem sempre adiciona o executavel ao PATH.
+LUGARES_TAILSCALE = [
+    r"C:\Program Files\Tailscale\tailscale.exe",
+    r"C:\Program Files (x86)\Tailscale\tailscale.exe",
 ]
 
 
@@ -195,6 +209,32 @@ def achar_cloudflared():
     return None
 
 
+def achar_tailscale():
+    caminho = shutil.which("tailscale")
+    if caminho:
+        return caminho
+    for c in LUGARES_TAILSCALE:
+        if os.path.isfile(c):
+            return c
+    return None
+
+
+def obter_endereco_tailscale(caminho):
+    """Retorna o DNS HTTPS estavel desta maquina, se o Tailscale estiver logado."""
+    try:
+        resultado = subprocess.run(
+            [caminho, "status", "--json"], capture_output=True, text=True,
+            encoding="utf-8", errors="replace", timeout=20,
+        )
+        dados = json.loads(resultado.stdout)
+        dns = dados.get("Self", {}).get("DNSName", "").rstrip(".")
+        if resultado.returncode == 0 and dns.lower().endswith(".ts.net"):
+            return "https://" + dns
+    except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError):
+        pass
+    return None
+
+
 def porta_ocupada(porta: int) -> bool:
     with socket.socket() as s:
         s.settimeout(0.5)
@@ -350,6 +390,13 @@ def caixa(linhas):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Inicia o Code com para acesso pela internet.")
+    parser.add_argument(
+        "--quick", action="store_true",
+        help="usa o Cloudflare Quick Tunnel (link temporario) em vez do Tailscale",
+    )
+    argumentos = parser.parse_args()
+    modo_rapido = argumentos.quick
     os.chdir(BASE_DIR)
 
     print()
@@ -358,15 +405,26 @@ def main():
     print("  ============================================")
     print()
 
-    cloudflared = achar_cloudflared()
-    if not cloudflared:
-        print("  ERRO: nao achei o cloudflared.")
-        print()
-        print("  Instale com este comando e tente de novo:")
-        print("      winget install Cloudflare.cloudflared")
-        print()
-        input("  Aperte Enter pra fechar...")
-        return 1
+    if modo_rapido:
+        executavel_tunel = achar_cloudflared()
+        if not executavel_tunel:
+            print("  ERRO: nao achei o cloudflared.")
+            print("  Instale com: winget install Cloudflare.cloudflared")
+            input("  Aperte Enter pra fechar...")
+            return 1
+        endereco_fixo = None
+    else:
+        executavel_tunel = achar_tailscale()
+        if not executavel_tunel:
+            print("  ERRO: nao achei o Tailscale neste notebook.")
+            print("  Instale gratuitamente em https://tailscale.com/download/windows")
+            input("  Aperte Enter pra fechar...")
+            return 1
+        endereco_fixo = obter_endereco_tailscale(executavel_tunel)
+        if not endereco_fixo:
+            print("  ERRO: abra o Tailscale e conecte este notebook a sua conta.")
+            input("  Aperte Enter pra fechar...")
+            return 1
 
     if porta_ocupada(PORTA) and not resolver_porta_ocupada(PORTA):
         print()
@@ -376,11 +434,9 @@ def main():
     global JOB
     JOB = criar_job()
     if JOB is None:
-        # sem job, o fechar-no-X vira nosso unico aviso de que e hora de sair
         registrar_fechar_janela()
 
     # ---- 1) o servidor ------------------------------------------------
-    # 127.0.0.1: so o tunel fala com ele, nao fica exposto na rede local
     print("  [1/2] Ligando o servidor...")
     servidor = subprocess.Popen(
         [sys.executable, "-m", "uvicorn", "server:app",
@@ -390,7 +446,6 @@ def main():
     FILHOS.append(servidor)
     adotar(JOB, servidor)
 
-    # espera ele realmente atender antes de abrir o tunel
     for _ in range(40):
         if porta_ocupada(PORTA):
             break
@@ -407,34 +462,28 @@ def main():
         return 1
 
     # ---- 2) o tunel ---------------------------------------------------
-    print("  [2/2] Abrindo o tunel para a internet...")
-    print("        (leva uns 10 segundos)")
+    if modo_rapido:
+        print("  [2/2] Abrindo o link temporario do Cloudflare...")
+        comando_tunel = [
+            executavel_tunel, "tunnel", "--url", f"http://127.0.0.1:{PORTA}"
+        ]
+    else:
+        print("  [2/2] Abrindo seu link HTTPS fixo do Tailscale...")
+        comando_tunel = [executavel_tunel, "funnel", str(PORTA)]
+    print("        (a primeira ativacao do Funnel pode pedir aprovacao unica)")
 
     tunel = subprocess.Popen(
-        [cloudflared, "tunnel", "--url", f"http://127.0.0.1:{PORTA}"],
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        comando_tunel, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
         text=True, encoding="utf-8", errors="replace", bufsize=1,
     )
     FILHOS.append(tunel)
     adotar(JOB, tunel)
 
-    endereco = {"url": None}
-
-    def ler_saida():
-        """Le o log do tunel em outra thread, so pra pescar o endereco.
-        O resto do log a gente esconde: era isso que enchia a tela antes."""
-        for linha in tunel.stdout:
-            achou = PADRAO_URL.search(linha)
-            if achou and not endereco["url"]:
-                endereco["url"] = achou.group(0)
-                mostrar(achou.group(0))
-            elif "ERR" in linha:
-                # o resto do log a gente esconde, mas erro tem que aparecer:
-                # senao um tunel com problema fica mudo na tela
-                print("  [tunel] " + linha.rstrip()[:150])
+    estado = {"url": None, "aprovacao": None}
 
     def mostrar(url):
-        linhas = ["SEU ENDERECO (manda pros amigos):", "", url]
+        legenda = "SEU ENDERECO TEMPORARIO:" if modo_rapido else "SEU ENDERECO FIXO (manda pros amigos):"
+        linhas = [legenda, "", url]
         senha = senha_convite()
         if senha:
             linhas += ["", "Senha pra eles criarem conta:", "", senha]
@@ -442,32 +491,46 @@ def main():
 
         if copiar(url):
             print("  >> endereco copiado! e so colar (Ctrl+V) no WhatsApp/Discord")
-
-        # Voce nao precisa do tunel pra usar o seu proprio app: abrimos direto
-        # no localhost, que e mais rapido e nao depende de DNS nenhum.
         print(f"  >> abrindo pra voce em http://localhost:{PORTA}")
         webbrowser.open(f"http://localhost:{PORTA}")
 
-        if not dns_enxerga(url.replace("https://", "")):
-            print()
-            print("  AVISO: o DNS da SUA internet ainda nao conhece esse")
-            print("  endereco, entao ele pode nao abrir aqui na sua maquina.")
-            print("  Seus amigos normalmente conseguem abrir mesmo assim -")
-            print("  mande o link e peca pra alguem testar.")
-            print("  (pra resolver de vez, troque o DNS do Windows pra 1.1.1.1)")
+        if modo_rapido and not dns_enxerga(url.replace("https://", "")):
+            print("  AVISO: o DNS desta internet ainda nao reconhece o link.")
+            print("  Seus amigos normalmente conseguem abrir mesmo assim.")
 
         print()
         print("  DEIXE ESTA JANELA ABERTA - ela e o servidor.")
         print("  Para desligar tudo: Ctrl+C ou feche a janela.")
         print()
 
+    def ler_saida():
+        for linha in tunel.stdout:
+            achou = PADRAO_URL.search(linha)
+            if achou and not estado["url"]:
+                estado["url"] = achou.group(0)
+                mostrar(estado["url"])
+                continue
+            aprovacao = PADRAO_ATIVACAO.search(linha)
+            if aprovacao:
+                estado["aprovacao"] = aprovacao.group(0)
+                caixa([
+                    "ATIVACAO UNICA NECESSARIA:", "",
+                    "Abra este endereco e habilite o Funnel para sua rede:", "",
+                    estado["aprovacao"], "",
+                    "Depois, rode iniciar_online.bat novamente.",
+                ])
+            elif "ERR" in linha or "not enabled on your tailnet" in linha.lower():
+                print("  [tunel] " + linha.rstrip()[:180])
+
     threading.Thread(target=ler_saida, daemon=True).start()
 
-    # ---- espera ate voce mandar parar ---------------------------------
     try:
         while True:
             if tunel.poll() is not None:
-                print("\n  O tunel caiu. Rode de novo pra pegar um endereco novo.")
+                if estado["aprovacao"]:
+                    print("\n  Ative o Funnel no link acima e abra iniciar_online.bat de novo.")
+                else:
+                    print("\n  O tunel encerrou. Verifique o Tailscale e tente novamente.")
                 break
             if servidor.poll() is not None:
                 print("\n  O servidor caiu.")
@@ -476,19 +539,16 @@ def main():
     except KeyboardInterrupt:
         print("\n  Desligando...")
     finally:
-        # saida limpa: pede pra cada um encerrar e da um tempo pra isso
         for p in (tunel, servidor):
             try:
                 p.terminate()
                 p.wait(timeout=5)
             except Exception:
                 pass
-        # e depois confere de verdade - o terminate() nao alcanca netos e
-        # um processo travado simplesmente ignora o pedido
         limpar_filhos()
         print("  Tudo desligado.")
 
-    return 0
+    return 0 if estado["url"] else 1
 
 
 if __name__ == "__main__":

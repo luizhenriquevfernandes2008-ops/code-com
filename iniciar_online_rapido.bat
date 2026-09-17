@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-title Code com - LINK FIXO
+title Code com - LINK TEMPORARIO
 cd /d "%~dp0"
 
 python --version >nul 2>&1
@@ -14,8 +14,6 @@ if errorlevel 1 (
   exit /b 1
 )
 
-python online.py
+python online.py --quick
 
-REM se o online.py fechar sozinho por algum erro inesperado,
-REM a janela nao some antes de voce conseguir ler
 if errorlevel 1 pause
