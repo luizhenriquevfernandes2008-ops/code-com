@@ -221,9 +221,9 @@ Pra uso entre amigos, está ótimo.
   para trocar foto, nome de exibição, status, "sobre mim", cor e senha.
   Clicar em qualquer pessoa abre o cartão de perfil dela.
 - **Amigos**: no cartão de perfil tem "Adicionar amigo". Os pedidos aparecem
-  no topo da tela inicial com ✓ e ✕, e chegam na hora para a outra pessoa.
+  no topo da tela inicial com botões para aceitar e recusar, e chegam na hora para a outra pessoa.
 - **Compartilhar janela ou tela**: dentro de uma sala de voz, escolha
-  **🪟 Janela/aba** ou **🖥️ Tela toda**. O seletor do navegador ainda permite
+  **Janela/aba** ou **Tela toda**. O seletor do navegador ainda permite
   confirmar a fonte. Só funciona em `https://` ou `localhost` (mesma regra
   do microfone), então use o `iniciar_online.bat`.
 
@@ -277,7 +277,7 @@ Pra uso entre amigos, está ótimo.
   navegador (`noiseSuppression`, contra chiado constante) e um **portão de
   ruído** nosso, que fecha o microfone quando você não está falando. A
   barrinha no painel de voz mostra o que está sendo captado: verde quando
-  passa, cinza quando está sendo cortado. O botão **🎚️ Ruído** desliga.
+  passa, cinza quando está sendo cortado. O botão **Ruído** desliga.
 
   Isto **não** é o Krisp do Discord, que usa um modelo de rede neural treinado
   para separar voz de ruído. O portão resolve teclado e ventilador no silêncio,
