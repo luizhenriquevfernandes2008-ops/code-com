@@ -1,5 +1,9 @@
 # Code com
 
+> Chat auto-hospedado com canais, mensagens em tempo real, chamadas de voz e transmissão de tela em até 1080p/60 FPS.
+
+![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white) ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white) ![WebSockets](https://img.shields.io/badge/WebSockets-4A4A55) ![WebRTC](https://img.shields.io/badge/WebRTC-333333?logo=webrtc&logoColor=white) ![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white) ![PWA](https://img.shields.io/badge/PWA-5A0FC8?logo=pwa&logoColor=white)
+
 O **Code com** é um aplicativo de conversa auto-hospedado para grupos de amigos,
 com servidores e canais, mensagens em tempo real, chamadas de voz e transmissão
 de tela. Ele roda no computador de quem hospeda e pode ser aberto no navegador
